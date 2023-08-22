@@ -1,0 +1,7 @@
+#!/bin/bash -ex
+
+TAG="$SNAP_INSTANCE_NAME.configure"
+
+SERVER_ADDRESS=$(snapctl get server-address)
+TOPIC_PREFIX=$(snapctl get topic-prefix)
+

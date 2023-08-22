@@ -1,0 +1,211 @@
+name: matter-mqtt-bridge
+version: "1.0.0-beta"
+summary: TBA
+description: Refer to https://snapcraft.io/TBA
+
+# Matter:     Apache-2.0
+# Paho C lib: Eclipse Public License v1.0
+license: Apache-2.0
+#  AND epl-1.0
+
+grade: devel
+confinement: devmode
+
+base: core22
+architectures:
+  - build-on: arm64
+  - build-on: amd64
+
+layout:
+  /usr/lib:
+    bind: $SNAP/usr/lib
+parts:
+  paho-c:
+    plugin: nil
+    source: https://github.com/eclipse/paho.mqtt.c.git
+    source-depth: 1
+    source-tag: v1.3.8
+    override-build: |
+      mkdir -p $CRAFT_PART_INSTALL/lib
+
+      cmake -Bbuild -H. -DPAHO_ENABLE_TESTING=OFF -DPAHO_BUILD_STATIC=ON \
+      -DPAHO_WITH_SSL=ON -DPAHO_HIGH_PERFORMANCE=ON \
+      -DCMAKE_INSTALL_PREFIX=$CRAFT_PART_INSTALL/
+
+      cmake --build build/ --target install
+      ldconfig
+
+      mkdir -p $CRAFT_PART_INSTALL/usr/share/doc/paho-c
+      cp LICENSE $CRAFT_PART_INSTALL/usr/share/doc/paho-c/
+    build-packages:
+      - build-essential
+      - gcc
+      - g++
+      - git
+      - make 
+      - cmake
+      - libssl-dev
+      - doxygen 
+      - graphviz
+
+  paho-cpp:
+    plugin: nil
+    source: https://github.com/eclipse/paho.mqtt.cpp.git
+    source-depth: 1
+    source-tag: v1.2.0
+    after: [paho-c]
+    override-build: |
+      mkdir -p $CRAFT_PART_INSTALL/lib
+
+      # Copy paho C lib to paho C++ part
+      cp -rv ../../paho-c/install/lib/* $CRAFT_PART_INSTALL/lib
+      cp -rv ../../paho-c/install/include/* $CRAFT_PART_INSTALL/lib
+
+      cmake -Bbuild -H. -DPAHO_BUILD_DOCUMENTATION=ON -DPAHO_BUILD_STATIC=ON \
+        -DCMAKE_INSTALL_PREFIX=$CRAFT_PART_INSTALL/lib/
+
+      cmake --build build/ --target install
+      ldconfig
+
+      # Copy paho C and C++ libs to $SNAP/usr/lib
+      mkdir -p $CRAFT_PART_INSTALL/usr/lib
+      cp -rv ../../paho-c/install/lib/* $CRAFT_PART_INSTALL/usr/lib
+      cp -rv ../../paho-c/install/include/* $CRAFT_PART_INSTALL/usr/lib
+  
+  connectedhomeip:
+    plugin: nil
+    source: https://github.com/project-chip/connectedhomeip.git
+    source-depth: 1
+    source-tag: v1.1.0.1
+    source-submodules: []
+    override-pull: |
+      craftctl default
+      # shallow clone the submodules
+      scripts/checkout_submodules.py --shallow --platform linux
+
+  zap:
+    plugin: nil
+    source: https://github.com/project-chip/zap.git
+    source-depth: 1
+    source-tag: v2023.05.04
+    build-environment:
+      - NODE_VERSION: v18.16.1
+    build-packages:
+      - libpango1.0-dev 
+      - libjpeg-dev 
+      - libgif-dev 
+      - librsvg2-dev
+      - wget
+    override-build: |
+      if [[ $SNAP_ARCH == "arm64" ]]; then
+        # Install node+npm
+        NODE=node-$NODE_VERSION-linux-$SNAP_ARCH
+        wget https://nodejs.org/dist/$NODE_VERSION/$NODE.tar.xz
+        tar -xJf $NODE.tar.xz
+        export PATH=$PWD/$NODE/bin:$PATH
+
+        # Install zap
+        npm install
+
+        # Define the environment needed for the app build
+        echo "export PATH=$PWD/$NODE/bin:$PATH" > env
+        echo "export ZAP_DEVELOPMENT_PATH=$PWD" >> env
+        cat env
+      fi
+
+  matter-mqtt-bridge:
+    after: [paho-c, paho-cpp, connectedhomeip, zap]
+    plugin: nil
+    source: app
+    build-environment:
+      - ZAP_ENV: /root/parts/zap/build/env
+    override-build: |
+      # Setup ZAP paths; installed in the corresponding part
+      test -f $ZAP_ENV && source $ZAP_ENV
+      
+      # Change to SDK's directory to allow caching of the activation
+      # regardless of this part's pull and build status.
+      cd ../../connectedhomeip/src
+
+      # The project writes its data to /tmp which isn't persisted.
+      #
+      # There is currently has no known way of overriding the default paths to
+      #   both storage and security config files.
+      #
+      # Snap does not allow bind-mounting a persistent directory on /tmp, 
+      #  so we need to first replace it in the source with another path, i.e. /mnt.
+      # See the top-level layout definition which bind-mounts a persisted
+      #   directory within the confined snap space on /mnt.
+      #
+      # Replace storage paths:
+      sed -i 's/\/tmp/\/mnt/g' src/platform/Linux/CHIPLinuxStorage.h
+      # Replace key-value store path:
+      sed -i 's/\/tmp/\/mnt/g' src/platform/Linux/CHIPPlatformConfig.h
+
+      cd $CRAFT_PART_BUILD
+      cd ../../connectedhomeip/src
+
+      # To avoid unrelated activation errors, don't treat unset variables as error
+      set +u
+
+      # Skip all non-core Python requirements:
+      sed -i '/^-r requirements/ s/./#&/' ./scripts/setup/requirements.txt
+
+      source scripts/activate.sh
+      set -u
+
+      # Copy and replace the linux bridge app
+      cp -vr $CRAFT_PART_BUILD/bridge-app/linux/ ./examples/bridge-app/linux/
+      
+      cd ./examples/bridge-app/linux/
+
+      gn gen out/build
+      ninja -C out/build -t clean
+      ninja -C out/build
+
+      # ldd out/build/chip-bridge-app
+      
+      mkdir -p $CRAFT_PART_INSTALL/bin
+      cp out/build/chip-bridge-app $CRAFT_PART_INSTALL/bin/chip-bridge-app    
+    build-packages:
+      - git
+      - gcc
+      - g++
+      - pkg-config
+      - libssl-dev
+      - libdbus-1-dev
+      - libglib2.0-dev
+      - libavahi-client-dev
+      - ninja-build
+      - python3-venv
+      - python3-dev
+      - python3-pip
+      - unzip
+      - libgirepository1.0-dev
+      - libcairo2-dev
+      - libreadline-dev
+      - generate-ninja
+
+  local-bin:
+    plugin: nil
+    source: snap/local/bin/
+    override-build: |
+      mkdir -p $CRAFT_PART_INSTALL/bin
+      cp -v run.sh $CRAFT_PART_INSTALL/bin/
+      cp -v load-snap-options.sh $CRAFT_PART_INSTALL/bin/
+
+apps:
+  matter-mqtt-bridge:
+    daemon: simple
+    command-chain:
+      - bin/load-snap-options.sh
+    command: bin/run.sh
+    install-mode: disable
+    restart-delay: 10s
+    plugs:
+      - network
+      - network-bind
+      - bluez
+      - avahi-control
+  help:
+    command: bin/chip-bridge-app -h
