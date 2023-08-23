@@ -18,6 +18,8 @@ architectures:
 layout:
   /usr/local:
     bind: $SNAP/usr/local
+  /mnt:
+    bind: $SNAP_COMMON/mnt
 
 lint:
   ignore:
