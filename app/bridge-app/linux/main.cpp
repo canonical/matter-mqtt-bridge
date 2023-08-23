@@ -1,3 +1,4 @@
+//  Copyright © 2023 Canonical Ltd.
 /*
  *
  *    Copyright (c) 2021 Project CHIP Authors
