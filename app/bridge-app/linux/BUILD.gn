@@ -39,7 +39,7 @@ executable("chip-bridge-app") {
   cflags = [ "-Wconversion" ]
 
   ldflags = [
-    "-L/root/parts/paho-cpp/install/usr/lib",  # Library search path for the Paho MQTT C and C++ linkers
+    "-L/usr/local/lib",  # Library search path for the Paho MQTT C and C++ linkers
   ]
 
   libs = [ 

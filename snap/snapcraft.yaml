@@ -16,16 +16,16 @@ architectures:
   - build-on: amd64
 
 layout:
-  /usr/:
-    bind: $SNAP/usr/
+  /usr/local:
+    bind: $SNAP/usr/local
   /mnt:
     bind: $SNAP_COMMON/mnt
 
 lint:
   ignore:
     - library:
-      - usr/lib/libpaho-mqtt3c.so.1.3.8
-      - usr/lib/libpaho-mqtt3cs.so.1.3.8
+      - usr/local/lib/libpaho-mqtt3c.so.1.3.8
+      - usr/local/lib/libpaho-mqtt3cs.so.1.3.8
 
 parts:
   paho-c:
@@ -34,15 +34,12 @@ parts:
     source-depth: 1
     source-tag: v1.3.8
     override-build: |
-      mkdir -p $CRAFT_PART_INSTALL/usr/
-
-      # Build and install the library to the $CRAFT_PART_INSTALL/usr/
+      # Build and install the library to the default path /usr/local/
       cmake -Bbuild -H. \
         -DPAHO_ENABLE_TESTING=OFF \
         -DPAHO_BUILD_STATIC=ON \
         -DPAHO_WITH_SSL=ON \
-        -DPAHO_HIGH_PERFORMANCE=ON \
-        -DCMAKE_INSTALL_PREFIX=$CRAFT_PART_INSTALL/usr/
+        -DPAHO_HIGH_PERFORMANCE=ON
       cmake --build build/ --target install
 
       # Create links and cache to shared libraries
@@ -56,6 +53,7 @@ parts:
       - gcc
       - g++
       - git
+      # - make 
       - cmake
       - libssl-dev
       - doxygen 
@@ -70,20 +68,17 @@ parts:
     override-build: |
       mkdir -p $CRAFT_PART_INSTALL/usr/share/doc/paho-cpp/
 
-      # Copy the Paho C library dependency to the Paho C++ directory
-      cp -vr ../../paho-c/install/usr/* $CRAFT_PART_INSTALL/usr
-
-      # Build and install the library to the $CRAFT_PART_INSTALL/usr/
+      # Build and install the library to the default path /usr/local/
       cmake -Bbuild -H. \
           -DPAHO_BUILD_DOCUMENTATION=ON \
-          -DPAHO_BUILD_STATIC=ON \
-          -DCMAKE_PREFIX_PATH=$CRAFT_PART_INSTALL/usr
+          -DPAHO_BUILD_STATIC=ON
       cmake --build build/ --target install
 
       # Create links and cache to shared libraries
       ldconfig
 
       # Copy the license file
+      mkdir -p $CRAFT_PART_INSTALL/usr/share/doc/paho-c
       curl -o LICENSE https://www.eclipse.org/legal/epl-v10.html
       cp LICENSE $CRAFT_PART_INSTALL/usr/share/doc/paho-cpp/
 
@@ -155,6 +150,9 @@ parts:
       mkdir -p $CRAFT_PART_INSTALL/bin
       cp -v out/build/chip-bridge-app $CRAFT_PART_INSTALL/bin/
 
+      # Copy MQTT libraries to $CRAFT_PART_INSTALL
+      mkdir -p $CRAFT_PART_INSTALL/usr/local/
+      cp -vr /usr/local/* $CRAFT_PART_INSTALL/usr/local/
     build-packages:
       - pkg-config
       - libdbus-1-dev
