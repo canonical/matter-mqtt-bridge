@@ -51,7 +51,7 @@ parts:
       - gcc
       - g++
       - git
-      - make 
+      # - make 
       - cmake
       - libssl-dev
       - doxygen 
@@ -142,7 +142,6 @@ parts:
       ninja -C out/build
 
       # Check dynamic library dependencies
-      pwd
       ldd out/build/chip-bridge-app
 
       # Copy built app to $CRAFT_PART_INSTALL
@@ -153,11 +152,7 @@ parts:
       mkdir -p $CRAFT_PART_INSTALL/usr/local/
       cp -vr /usr/local/* $CRAFT_PART_INSTALL/usr/local/
     build-packages:
-      - git
-      - gcc
-      - g++
       - pkg-config
-      - libssl-dev
       - libdbus-1-dev
       - libglib2.0-dev
       - libavahi-client-dev
