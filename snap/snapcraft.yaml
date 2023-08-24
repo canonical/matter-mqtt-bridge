@@ -8,7 +8,7 @@ description: Refer to https://snapcraft.io/TBA
 license: Apache-2.0 AND EPL-1.0
 
 grade: devel
-confinement: devmode
+confinement: strict
 
 base: core22
 architectures:
