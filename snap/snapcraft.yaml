@@ -181,6 +181,8 @@ apps:
     command: bin/run.sh
     install-mode: disable
     restart-delay: 10s
+    environment:
+      LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/usr/local/lib
     plugs:
       - network
       - network-bind
