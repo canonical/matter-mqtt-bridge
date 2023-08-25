@@ -77,6 +77,10 @@ parts:
       # Create links and cache to shared libraries
       ldconfig
 
+      # Copy MQTT libraries to $CRAFT_PART_INSTALL
+      mkdir -p $CRAFT_PART_INSTALL/usr/local/
+      cp -vr /usr/local/* $CRAFT_PART_INSTALL/usr/local/
+
       # Copy the license file
       mkdir -p $CRAFT_PART_INSTALL/usr/share/doc/paho-c
       curl -o LICENSE https://www.eclipse.org/legal/epl-v10.html
@@ -150,9 +154,6 @@ parts:
       mkdir -p $CRAFT_PART_INSTALL/bin
       cp -v out/build/chip-bridge-app $CRAFT_PART_INSTALL/bin/
 
-      # Copy MQTT libraries to $CRAFT_PART_INSTALL
-      mkdir -p $CRAFT_PART_INSTALL/usr/local/
-      cp -vr /usr/local/* $CRAFT_PART_INSTALL/usr/local/
     build-packages:
       - pkg-config
       - libdbus-1-dev
