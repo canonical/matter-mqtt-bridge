@@ -8,14 +8,16 @@ The files under "app" directory get copied into CHIP project's examples/bridge-a
 sudo snap install matter-mqtt-bridge
 ```
 
-### Configure
+## Configure
 
-#### Setting MQTT Server Address
+### Setting MQTT Server Address
+
 ```bash
 sudo snap set matter-mqtt-bridge server-address="tcp://localhost:1883"
 ```
 
-#### Setting MQTT Topic Prefix
+### Setting MQTT Topic Prefix
+
 ```bash
 sudo snap set matter-mqtt-bridge topic-prefix="test-topic-prefix"
 ```
@@ -40,11 +42,11 @@ GENERAL OPTIONS
 ...
 ```
 
-### Grant access
+## Grant access
 
 The snap uses [interfaces](https://snapcraft.io/docs/interface-management) to allow access to external resources. Depending on the use case, you need to "connect" certain interfaces to grant the necessary access.
 
-#### DNS-SD
+### DNS-SD
 
 The [avahi-control](https://snapcraft.io/docs/avahi-control-interface) is necessary to allow discovery of the application via DNS-SD:
 
@@ -55,21 +57,23 @@ sudo snap connect matter-mqtt-bridge:avahi-control
 > **Note**  
 > To make DNS-SD discovery work, the host also needs to have a running avahi-daemon which can be installed with `sudo apt install avahi-daemon` or `sudo snap install avahi`.
 
-#### BLE
+### BLE
 
 Connect the [`bluez`](https://snapcraft.io/docs/bluez-interface) interface for device discovery over Bluetooth Low Energy (BLE):
 ```bash
 sudo snap connect matter-mqtt-bridge:bluez
 ```
 
-### Run
+## Run
 
 ```bash
 sudo snap start --enable matter-mqtt-bridge
 ```
 
 ## Control with Chip Tool
+
 For the following examples, we use the [Chip Tool snap](https://snapcraft.io/chip-tool) to commission and control the bridge app.
+
 ### Commissioning
 
 ```bash
@@ -120,7 +124,8 @@ test-topic-prefix/3/OnOff/OnOff {
 ```
 
 ## Development
-Build:
+
+### Build
 ```bash
 snapcraft -v
 ```
