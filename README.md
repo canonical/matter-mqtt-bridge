@@ -65,9 +65,14 @@ sudo snap connect matter-mqtt-bridge:bluez
 ```
 
 ## Run
-
 ```bash
-sudo snap start --enable matter-mqtt-bridge
+sudo snap start matter-mqtt-bridge
+```
+Add `--enable` to make the service automatically start at boot. 
+
+Query and follow the logs:
+```
+sudo snap logs -n 100 -f matter-mqtt-bridge
 ```
 
 ## Control with Chip Tool
