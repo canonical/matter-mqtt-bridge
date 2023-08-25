@@ -5,7 +5,7 @@ The files under "app" directory get copied into CHIP project's examples/bridge-a
 ## Install
 
 ```bash
-sudo snap install matter-mqtt-bridge
+sudo snap install --dangerous *.snap
 ```
 
 ## Configure
@@ -104,13 +104,11 @@ sudo chip-tool onoff off 110 1
 where:
 
 -   `onoff` is the matter cluster name
--   `on`/`off`/`toggle` is the command name. The `toggle` command is RECOMMENDED
-    because it is stateless. The lighting app does not synchronize the actual state of
-    devices.
--   `110` is the node id of the lighting app assigned during the commissioning
+-   `on`/`off`/`toggle` is the command name
+-   `110` is the node id of the bridge assigned during the commissioning
 -   `1` is the endpoint of the configured device
 
-## Subscribe MQTT messages
+## Subscribe to MQTT messages
 
 ```bash
 $ sudo snap install mosquitto
@@ -128,14 +126,3 @@ test-topic-prefix/3/OnOff/OnOff {
 }
 ```
 
-## Development
-
-### Build
-```bash
-snapcraft -v
-```
-This will download >500MB and requires around 8GB of disk space. 
-
-To build for other architectures, customize the `architectures` field inside the snapcraft.yaml and use snapcraft's [Remote build](https://snapcraft.io/docs/remote-build).
-
-Install it as described in the [install](#install) section by replacing `matter-mqtt-bridge` with the locally built snap file name and setting `--dangerous` flag.
