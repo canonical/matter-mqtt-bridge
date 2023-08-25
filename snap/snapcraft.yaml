@@ -177,7 +177,7 @@ parts:
       cp -v run.sh $CRAFT_PART_INSTALL/bin/
 
 apps:
-  matter-mqtt-bridge:
+  bridge:
     daemon: simple
     command: bin/run.sh
     install-mode: disable
@@ -191,3 +191,7 @@ apps:
       - avahi-control
   help:
     command: bin/chip-bridge-app -h
+    environment:
+      LD_LIBRARY_PATH: $LD_LIBRARY_PATH:$SNAP/usr/local/lib
+
+
