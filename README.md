@@ -3,14 +3,13 @@
 The files under "app" directory get copied into CHIP project's examples/bridge-app/linux to inject MQTT functionality into the upstream example. The reason for this approach is to maintain the simplicity of this example and rely on the existing upstream build configurations.
 
 ## Build
-	```bash
-	snapcraft -v
-	```
-	This will download >500MB and requires around 8GB of disk space. 
-	
-	To build for other architectures, customize the `architectures` field inside the snapcraft.yaml and use snapcraft's [Remote build](https://snapcraft.io/docs/remote-build).
-	
-	Install it as described in the [install](#install) section by replacing `matter-mqtt-bridge` with the locally built snap file name and setting `--dangerous` flag.
+```bash
+snapcraft -v
+```
+This will download >500MB and requires around 8GB of disk space. 
+
+To build for other architectures, customize the `architectures` field inside the snapcraft.yaml and use snapcraft's [Remote build](https://snapcraft.io/docs/remote-build).
+ 
 ## Install
 
 ```bash
