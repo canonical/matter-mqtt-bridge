@@ -104,9 +104,9 @@ where:
 Switching on/off:
 
 ```bash
-sudo chip-tool onoff toggle 110 1 # toggle is stateless and recommended
-sudo chip-tool onoff on 110 1
-sudo chip-tool onoff off 110 1
+sudo chip-tool onoff toggle 110 3 # toggle is stateless and recommended
+sudo chip-tool onoff on 110 3
+sudo chip-tool onoff off 110 3
 ```
 
 where:
@@ -114,12 +114,66 @@ where:
 -   `onoff` is the matter cluster name
 -   `on`/`off`/`toggle` is the command name
 -   `110` is the node id of the bridge assigned during the commissioning
--   `1` is the endpoint of the configured device
+-   `3` is the endpoint of the configured device
 
-## Subscribe to MQTT messages
+## Usage example
+To control the matter-mqtt-bridge using chip-tool, follow these steps:
+
+1. **Subscribe to MQTT messages**
+
+Before sending a command via `chip-tool`, subscribe to MQTT messages using `mosquitto_sub`. 
+If you haven't already installed Mosquitto, you can do so with the following command:
 
 ```bash
-$ sudo snap install mosquitto
+sudo snap install mosquito
+```
+
+Then, subscribe to all MQTT topics to monitor incoming messages:
+```bash
+sudo mosquitto_sub -h localhost -t "#" -v
+```
+
+2. **Check bridge logs**
+
+In a separate terminal window, you can check the logs from the bridge using the following command:
+
+```
+sudo snap logs -n 100 -f matter-mqtt-bridge
+```
+
+3. **Control the bridge via chip-tool**
+ 
+To control the bridge use `chip-tool` using the following command:
+
+```
+sudo chip-tool onoff toggle 110 3
+```
+
+4. **Monitor bridge logs**
+
+After sending a command, you can monitor the bridge logs for relevant messages:
+
+```bash
+$ sudo snap logs -n 100 -f matter-mqtt-bridge
+
+...
+CHIP:DMG: AccessControl: allowed
+CHIP:DMG: Received command for Endpoint=3 Cluster=0x0000_0006 Command=0x0000_0002
+CHIP:DL: HandleReadOnOffAttribute: attrId=0, maxReadLength=1
+CHIP:ZCL: Toggle ep3 on/off from state 0 to 1
+CHIP:DL: HandleWriteOnOffAttribute: attrId=0
+CHIP:DL: [MQTT] Using TOPIC_PREFIX: test-topic-prefix
+CHIP:DL: Device[Light 1]: ON
+CHIP:DL: [MQTT] Publishing message...
+CHIP:DL: [MQTT] Message published.
+...
+```
+
+5. **Monitor MQTT messages**
+
+Simultaneously, you should also see messages being subscribed by the MQTT broker:
+
+```bash
 $ sudo mosquitto_sub -h localhost -t "#" -v
 
 test-topic-prefix/3/OnOff/OnOff {
@@ -133,4 +187,11 @@ test-topic-prefix/3/OnOff/OnOff {
         "zone" : ""
 }
 ```
+
+where:
+-   `test-topic-prefix` is the topic prefix
+-   `3` is the matter endpointID
+-   `OnOff` is the matter clusterName
+-   `OnOff` is the matter attributeName
+
 
