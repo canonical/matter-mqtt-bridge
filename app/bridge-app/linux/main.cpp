@@ -228,6 +228,12 @@ std::unique_ptr<mqtt::async_client> clientPtr;
 
 // ---------------------------------------------------------------------------
 
+// dynamic endpoint numbers DEFINITIONS:
+// =================================================================================
+#define ENDPOINT_NUMBERS "ENDPOINT_NUMBERS"
+
+// ---------------------------------------------------------------------------
+
 int AddDeviceEndpoint(Device * dev, EmberAfEndpointType * ep, const Span<const EmberAfDeviceType> & deviceTypeList,
                       const Span<DataVersion> & dataVersionStorage, chip::EndpointId parentEndpointId = chip::kInvalidEndpointId)
 {
@@ -267,6 +273,41 @@ int AddDeviceEndpoint(Device * dev, EmberAfEndpointType * ep, const Span<const E
     }
     ChipLogProgress(DeviceLayer, "Failed to add dynamic endpoint: No endpoints available!");
     return -1;
+}
+
+// Add multiple endpoints based on the ENDPOINT_NUMBERS environment variable
+int AddMultipleDeviceEndpoints(EmberAfEndpointType *ep,
+                               const Span<const EmberAfDeviceType> &deviceTypeList,
+                               const Span<DataVersion> &dataVersionStorage,
+                               chip::EndpointId parentEndpointId = chip::kInvalidEndpointId) {
+
+    const char * endpointNumbersStr = std::getenv(ENDPOINT_NUMBERS);
+    int endpointNumbers = std::atoi(endpointNumbersStr);
+
+    ChipLogProgress(DeviceLayer, "[DEBUG] Getting endpont numbers from the environment variable ENDPOINT_NUMBERS=%d ", endpointNumbers);
+    ChipLogProgress(DeviceLayer, "[DEBUG] Calling AddDeviceEndpoint %d times ", endpointNumbers - 1);
+
+    if (endpointNumbersStr != nullptr) {
+
+        // Call AddDeviceEndpoint (endpointNumbers-1) times
+        for (int i = 0; i < endpointNumbers - 1; ++i) {
+            std::string lightName = "New Light " + std::to_string(i + 2);
+            const char* lightNameCStr = lightName.c_str();
+            DeviceOnOff LightNewdevice(lightNameCStr, "Office");
+
+            int result = AddDeviceEndpoint(&LightNewdevice, ep, deviceTypeList, dataVersionStorage, parentEndpointId);
+
+            if (result == -1) {
+                ChipLogProgress(DeviceLayer, "[DEBUG] Failed to add new endpoint: %s",lightNameCStr);
+                return -1;
+            } else {
+                ChipLogProgress(DeviceLayer, "[DEBUG] Successfully added new endpoint: %s",lightNameCStr);
+            }
+        }
+    }
+    
+    ChipLogProgress(DeviceLayer, "[DEBUG] Successfully added %d new endpoints",endpointNumbers - 1);
+    return 0; 
 }
 
 int RemoveDeviceEndpoint(Device * dev)
@@ -756,6 +797,10 @@ int main(int argc, char * argv[])
                       Span<DataVersion>(gLight1DataVersions), 1);
 
     gRooms.push_back(&room1);
+
+    // Add new device endpoints via environment variables ENDPOINT_NUMBERS
+    AddMultipleDeviceEndpoints(&bridgedLightEndpoint, Span<const EmberAfDeviceType>(gBridgedOnOffDeviceTypes),
+                                            Span<DataVersion>(gLight1DataVersions), 1);
 
     // Run CHIP
     ApplicationInit();
