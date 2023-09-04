@@ -284,8 +284,8 @@ int AddMultipleDeviceEndpoints(EmberAfEndpointType *ep,
     const char * endpointNumbersStr = std::getenv(ENDPOINT_NUMBERS);
     int endpointNumbers = std::atoi(endpointNumbersStr);
 
-    ChipLogProgress(DeviceLayer, "[DEBUG] Getting endpont numbers from the environment variable ENDPOINT_NUMBERS=%d ", endpointNumbers);
-    ChipLogProgress(DeviceLayer, "[DEBUG] Calling AddDeviceEndpoint %d times ", endpointNumbers - 1);
+    ChipLogProgress(DeviceLayer, "[ENDPOINT] Getting endpont numbers from the environment variable ENDPOINT_NUMBERS=%d ", endpointNumbers);
+    ChipLogProgress(DeviceLayer, "[ENDPOINT] Calling AddDeviceEndpoint %d times ", endpointNumbers - 1);
 
     if (endpointNumbersStr != nullptr) {
 
@@ -298,15 +298,15 @@ int AddMultipleDeviceEndpoints(EmberAfEndpointType *ep,
             int result = AddDeviceEndpoint(&LightNewdevice, ep, deviceTypeList, dataVersionStorage, parentEndpointId);
 
             if (result == -1) {
-                ChipLogProgress(DeviceLayer, "[DEBUG] Failed to add new endpoint: %s",lightNameCStr);
+                ChipLogProgress(DeviceLayer, "[ENDPOINT] Failed to add new endpoint: %s",lightNameCStr);
                 return -1;
             } else {
-                ChipLogProgress(DeviceLayer, "[DEBUG] Successfully added new endpoint: %s",lightNameCStr);
+                ChipLogProgress(DeviceLayer, "[ENDPOINT] Successfully added new endpoint: %s",lightNameCStr);
             }
         }
     }
     
-    ChipLogProgress(DeviceLayer, "[DEBUG] Successfully added %d new endpoints",endpointNumbers - 1);
+    ChipLogProgress(DeviceLayer, "[ENDPOINT] Successfully added %d new endpoints",endpointNumbers - 1);
     return 0; 
 }
 
