@@ -17,6 +17,12 @@ sudo snap install --dangerous *.snap
 ```
 
 ## Configure
+### View default configurations
+```bash
+$ sudo snap get matter-mqtt-bridge
+Key              Value
+total-endpoints  1
+```
 
 ### Setting MQTT Server Address
 
@@ -49,6 +55,15 @@ GENERAL OPTIONS
        Enable Thread management via ot-agent.
 ...
 ```
+
+### Setting the total number of endpoints
+
+```bash
+sudo snap set matter-mqtt-bridge total-endpoints=5
+```
+This step is optional; the default value of total endpoints is 1.
+
+The bridge can be configured to support dynamic devices. For more information on using dynamic endpoints, please refer to [here](https://github.com/project-chip/connectedhomeip/tree/v1.1.0.1/examples/bridge-app/linux).
 
 ## Grant access
 
@@ -149,9 +164,14 @@ To control the bridge use `chip-tool` using the following command:
 sudo chip-tool onoff toggle 110 3
 ```
 
+To control various endpoints of the bridge:
+```
+sudo chip-tool onoff toggle 110 5
+```
+
 4. **Monitor bridge logs**
 
-After sending a command, you can monitor the bridge logs for relevant messages:
+After sending commands, you can monitor the bridge logs for relevant messages:
 
 ```bash
 $ sudo snap logs -n 100 -f matter-mqtt-bridge
@@ -164,6 +184,16 @@ CHIP:ZCL: Toggle ep3 on/off from state 0 to 1
 CHIP:DL: HandleWriteOnOffAttribute: attrId=0
 CHIP:DL: [MQTT] Using TOPIC_PREFIX: test-topic-prefix
 CHIP:DL: Device[Light 1]: ON
+CHIP:DL: [MQTT] Publishing message...
+CHIP:DL: [MQTT] Message published.
+...
+CHIP:DMG: AccessControl: allowed
+CHIP:DMG: Received command for Endpoint=5 Cluster=0x0000_0006 Command=0x0000_0002
+CHIP:DL: HandleReadOnOffAttribute: attrId=0, maxReadLength=1
+CHIP:ZCL: Toggle ep5 on/off from state 0 to 1
+CHIP:DL: HandleWriteOnOffAttribute: attrId=0
+CHIP:DL: [MQTT] Using TOPIC_PREFIX: test-topic-prefix
+CHIP:DL: Device[Light 3]: ON
 CHIP:DL: [MQTT] Publishing message...
 CHIP:DL: [MQTT] Message published.
 ...
@@ -186,11 +216,23 @@ test-topic-prefix/3/OnOff/OnOff {
         "parentEndpointId" : 1,
         "zone" : ""
 }
+...
+test-topic-prefix/5/OnOff/OnOff {
+        "attributeId" : 0,
+        "clusterId" : 6,
+        "command" : "on",
+        "deviceName" : "Light 3",
+        "endpointId" : 5,
+        "location" : "Office",
+        "parentEndpointId" : 1,
+        "zone" : ""
+}
 ```
 
 where:
 -   `test-topic-prefix` is the topic prefix
--   `3` is the matter endpointID
+-   `3` is the endpointID for one of the matter endpoints
+-   `5` is the endpointID for one of the matter endpoints
 -   `OnOff` is the matter clusterName
 -   `OnOff` is the matter attributeName
 
