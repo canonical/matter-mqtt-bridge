@@ -5,6 +5,6 @@ TAG="$SNAP_NAME.install"
 logger --tag=$TAG "Start"
 
 # Set defaults
-snapctl set endpoint-numbers=1
+snapctl set total-endpoints=1
 
 logger --tag=$TAG "End"

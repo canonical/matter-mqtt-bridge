@@ -230,7 +230,7 @@ std::unique_ptr<mqtt::async_client> clientPtr;
 
 // dynamic endpoint numbers DEFINITIONS:
 // =================================================================================
-#define ENDPOINT_NUMBERS "ENDPOINT_NUMBERS"
+#define TOTAL_ENDPOINTS "TOTAL_ENDPOINTS"
 
 // ---------------------------------------------------------------------------
 
@@ -275,16 +275,15 @@ int AddDeviceEndpoint(Device * dev, EmberAfEndpointType * ep, const Span<const E
     return -1;
 }
 
-// Add multiple endpoints based on the ENDPOINT_NUMBERS environment variable
-int AddMultipleDeviceEndpoints(EmberAfEndpointType *ep,
+int ConfigureDeviceEndpoints(EmberAfEndpointType *ep,
                                const Span<const EmberAfDeviceType> &deviceTypeList,
                                const Span<DataVersion> &dataVersionStorage,
                                chip::EndpointId parentEndpointId = chip::kInvalidEndpointId) {
 
-    const char * endpointNumbersStr = std::getenv(ENDPOINT_NUMBERS);
+    const char * endpointNumbersStr = std::getenv(TOTAL_ENDPOINTS);
     int endpointNumbers = std::atoi(endpointNumbersStr);
 
-    ChipLogProgress(DeviceLayer, "[ENDPOINT] Getting endpont numbers from the environment variable ENDPOINT_NUMBERS=%d ", endpointNumbers);
+    ChipLogProgress(DeviceLayer, "[ENDPOINT] Getting number of endpoints from the environment variable TOTAL_ENDPOINTS=%d ", endpointNumbers);
     ChipLogProgress(DeviceLayer, "[ENDPOINT] Calling AddDeviceEndpoint %d times ", endpointNumbers - 1);
 
     if (endpointNumbersStr != nullptr) {
@@ -800,8 +799,8 @@ int main(int argc, char * argv[])
 
     gRooms.push_back(&room1);
 
-    // Add new device endpoints via environment variables ENDPOINT_NUMBERS
-    AddMultipleDeviceEndpoints(&bridgedLightEndpoint, Span<const EmberAfDeviceType>(gBridgedOnOffDeviceTypes),
+    // Add new device endpoints via environment variables TOTAL_ENDPOINTS
+    ConfigureDeviceEndpoints(&bridgedLightEndpoint, Span<const EmberAfDeviceType>(gBridgedOnOffDeviceTypes),
                                             Span<DataVersion>(gLight1DataVersions), 1);
 
     // Run CHIP

@@ -2,9 +2,9 @@
 
 TAG="$SNAP_INSTANCE_NAME.configure"
 
-ENDPOINT_NUMBERS=$(snapctl get endpoint-numbers)
-if [[ -n $ENDPOINT_NUMBERS ]] && ! [[ $ENDPOINT_NUMBERS =~ ^[1-9][0-9]*$ ]]; then
-    logger -t $TAG --stderr "ENDPOINT_NUMBERS: '$ENDPOINT_NUMBERS' is not a positive integer"
+TOTAL_ENDPOINTS=$(snapctl get total-endpoints)
+if [[ -n $TOTAL_ENDPOINTS ]] && ! [[ $TOTAL_ENDPOINTS =~ ^[1-9][0-9]*$ ]]; then
+    logger -t $TAG --stderr "TOTAL_ENDPOINTS: '$TOTAL_ENDPOINTS' is not a positive integer"
     exit 1
 fi
 
