@@ -291,11 +291,11 @@ int AddMultipleDeviceEndpoints(EmberAfEndpointType *ep,
 
         // Call AddDeviceEndpoint (endpointNumbers-1) times
         for (int i = 0; i < endpointNumbers - 1; ++i) {
-            std::string lightName = "New Light " + std::to_string(i + 2);
+            std::string lightName = "Light " + std::to_string(i + 2);
             const char* lightNameCStr = lightName.c_str();
-            DeviceOnOff LightNewdevice(lightNameCStr, "Office");
+            DeviceOnOff* newLightDevice = new DeviceOnOff(lightNameCStr, "Office");
 
-            int result = AddDeviceEndpoint(&LightNewdevice, ep, deviceTypeList, dataVersionStorage, parentEndpointId);
+            int result = AddDeviceEndpoint(newLightDevice, ep, deviceTypeList, dataVersionStorage, parentEndpointId);
 
             if (result == -1) {
                 ChipLogProgress(DeviceLayer, "[ENDPOINT] Failed to add new endpoint: %s",lightNameCStr);
@@ -303,6 +303,8 @@ int AddMultipleDeviceEndpoints(EmberAfEndpointType *ep,
             } else {
                 ChipLogProgress(DeviceLayer, "[ENDPOINT] Successfully added new endpoint: %s",lightNameCStr);
             }
+
+            newLightDevice->SetReachable(true);
         }
     }
     

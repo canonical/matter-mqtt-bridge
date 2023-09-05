@@ -3,9 +3,9 @@
 TAG="$SNAP_INSTANCE_NAME.configure"
 
 ENDPOINT_NUMBERS=$(snapctl get endpoint-numbers)
-if [[ -n $ENDPOINT_NUMBERS]] && ! [[ $ENDPOINT_NUMBERS=~ ^[1-9][0-9]*$ ]]; then
+if [[ -n $ENDPOINT_NUMBERS ]] && ! [[ $ENDPOINT_NUMBERS =~ ^[1-9][0-9]*$ ]]; then
     logger -t $TAG --stderr "ENDPOINT_NUMBERS: '$ENDPOINT_NUMBERS' is not a positive integer"
     exit 1
 fi
 
-# Configure hook placeholder to allow setting snap options
+
