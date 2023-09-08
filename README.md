@@ -132,23 +132,24 @@ where:
 -   `3` is the endpoint of the configured device
 
 ## Usage example
-To control the matter-mqtt-bridge using chip-tool, follow these steps:
+
+In this example, we control the matter-mqtt-bridge using chip-tool Matter Controller. The bridge is configured to have a few endpoints and to forward and publish Matter commands to a local Mosquitto MQTT broker (see above). We will use the Mosquitto MQTT client to subscribe to the messages which are the incoming matter commands.
 
 1. **Subscribe to MQTT messages**
 
-Before sending a command via `chip-tool`, subscribe to MQTT messages using `mosquitto_sub`. 
-If you haven't already installed Mosquitto, you can do so with the following command:
+Before sending a command via `chip-tool`, subscribe to MQTT messages using the `mosquitto_sub` MQTT client. 
 
+If you don't have a locally running MQTT broker, you can install the [Mosquitto snap](https://snapcraft.io/mosquitto) with the following command:
 ```bash
-sudo snap install mosquito
+sudo snap install mosquitto
 ```
 
 Then, subscribe to all MQTT topics to monitor incoming messages:
 ```bash
-sudo mosquitto_sub -h localhost -t "#" -v
+mosquitto_sub -h localhost -t "#" -v
 ```
 
-2. **Check bridge logs**
+2. **Follow the bridge logs**
 
 In a separate terminal window, you can check the logs from the bridge using the following command:
 
@@ -156,26 +157,20 @@ In a separate terminal window, you can check the logs from the bridge using the 
 sudo snap logs -n 100 -f matter-mqtt-bridge
 ```
 
-3. **Control the bridge via chip-tool**
+3. **Send commands to the bridge via chip-tool**
  
-To control the bridge use `chip-tool` using the following command:
+Toggle a couple of devices at the corresponding endpoints:
 
 ```
 sudo chip-tool onoff toggle 110 3
-```
-
-To control various endpoints of the bridge:
-```
 sudo chip-tool onoff toggle 110 5
 ```
 
-4. **Monitor bridge logs**
+4. **Check the bridge logs**
 
 After sending commands, you can monitor the bridge logs for relevant messages:
 
 ```bash
-$ sudo snap logs -n 100 -f matter-mqtt-bridge
-
 ...
 CHIP:DMG: AccessControl: allowed
 CHIP:DMG: Received command for Endpoint=3 Cluster=0x0000_0006 Command=0x0000_0002
@@ -199,13 +194,11 @@ CHIP:DL: [MQTT] Message published.
 ...
 ```
 
-5. **Monitor MQTT messages**
+5. **Check MQTT messages**
 
-Simultaneously, you should also see messages being subscribed by the MQTT broker:
+Simultaneously, you should also see messages being received by the MQTT client:
 
-```bash
-$ sudo mosquitto_sub -h localhost -t "#" -v
-
+```
 test-topic-prefix/3/OnOff/OnOff {
         "attributeId" : 0,
         "clusterId" : 6,
@@ -228,12 +221,3 @@ test-topic-prefix/5/OnOff/OnOff {
         "zone" : ""
 }
 ```
-
-where:
--   `test-topic-prefix` is the topic prefix
--   `3` is the endpointID for one of the matter endpoints
--   `5` is the endpointID for one of the matter endpoints
--   `OnOff` is the matter clusterName
--   `OnOff` is the matter attributeName
-
-
