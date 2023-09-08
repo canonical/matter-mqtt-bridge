@@ -1,0 +1,10 @@
+#!/bin/bash -ex
+
+TAG="$SNAP_NAME.install"
+
+logger --tag=$TAG "Start"
+
+# Set defaults
+snapctl set total-endpoints=1
+
+logger --tag=$TAG "End"
