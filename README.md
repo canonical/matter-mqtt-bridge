@@ -133,7 +133,7 @@ where:
 
 ## Usage example
 
-In this example, we control the matter-mqtt-bridge using chip-tool Matter Controller. The bridge is configured to have a few endpoints and to forward and publish Matter commands to a local Mosquitto MQTT broker (see above). We will use the Mosquitto MQTT client to subscribe to the messages which are the incoming matter commands.
+In this example, we control the matter-mqtt-bridge using chip-tool Matter Controller. The bridge is configured (as described above) to have a few endpoints and to forward and publish Matter commands to a local Mosquitto MQTT broker. We will use the Mosquitto MQTT client to subscribe to the messages which are the incoming matter commands.
 
 1. **Subscribe to MQTT messages**
 
