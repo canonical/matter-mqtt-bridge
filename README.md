@@ -17,6 +17,12 @@ sudo snap install --dangerous *.snap
 ```
 
 ## Configure
+### View default configurations
+```bash
+$ sudo snap get matter-mqtt-bridge
+Key              Value
+total-endpoints  1
+```
 
 ### Setting MQTT Server Address
 
@@ -49,6 +55,15 @@ GENERAL OPTIONS
        Enable Thread management via ot-agent.
 ...
 ```
+
+### Setting the total number of endpoints
+
+```bash
+sudo snap set matter-mqtt-bridge total-endpoints=5
+```
+This step is optional; the default value of total endpoints is 1.
+
+The bridge can be configured to support dynamic devices. For more information on using dynamic endpoints, please refer to [here](https://github.com/project-chip/connectedhomeip/tree/v1.1.0.1/examples/bridge-app/linux).
 
 ## Grant access
 
@@ -104,9 +119,9 @@ where:
 Switching on/off:
 
 ```bash
-sudo chip-tool onoff toggle 110 1 # toggle is stateless and recommended
-sudo chip-tool onoff on 110 1
-sudo chip-tool onoff off 110 1
+sudo chip-tool onoff toggle 110 3 # toggle is stateless and recommended
+sudo chip-tool onoff on 110 3
+sudo chip-tool onoff off 110 3
 ```
 
 where:
@@ -114,14 +129,76 @@ where:
 -   `onoff` is the matter cluster name
 -   `on`/`off`/`toggle` is the command name
 -   `110` is the node id of the bridge assigned during the commissioning
--   `1` is the endpoint of the configured device
+-   `3` is the endpoint of the configured device
 
-## Subscribe to MQTT messages
+## Usage example
+
+In this example, we control the matter-mqtt-bridge using chip-tool Matter Controller. The bridge is configured (as described above) to have a few endpoints and to forward and publish Matter commands to a local Mosquitto MQTT broker. We will use the Mosquitto MQTT client to subscribe to the messages which are the incoming matter commands.
+
+1. **Subscribe to MQTT messages**
+
+Before sending a command via `chip-tool`, subscribe to MQTT messages using the `mosquitto_sub` MQTT client. 
+
+If you don't have a locally running MQTT broker, you can install the [Mosquitto snap](https://snapcraft.io/mosquitto) with the following command:
+```bash
+sudo snap install mosquitto
+```
+
+Then, subscribe to all MQTT topics to monitor incoming messages:
+```bash
+mosquitto_sub -h localhost -t "#" -v
+```
+
+2. **Follow the bridge logs**
+
+In a separate terminal window, you can check the logs from the bridge using the following command:
+
+```
+sudo snap logs -n 100 -f matter-mqtt-bridge
+```
+
+3. **Send commands to the bridge via chip-tool**
+ 
+Toggle a couple of devices at the corresponding endpoints:
+
+```
+sudo chip-tool onoff toggle 110 3
+sudo chip-tool onoff toggle 110 5
+```
+
+4. **Check the bridge logs**
+
+After sending commands, you can monitor the bridge logs for relevant messages:
 
 ```bash
-$ sudo snap install mosquitto
-$ sudo mosquitto_sub -h localhost -t "#" -v
+...
+CHIP:DMG: AccessControl: allowed
+CHIP:DMG: Received command for Endpoint=3 Cluster=0x0000_0006 Command=0x0000_0002
+CHIP:DL: HandleReadOnOffAttribute: attrId=0, maxReadLength=1
+CHIP:ZCL: Toggle ep3 on/off from state 0 to 1
+CHIP:DL: HandleWriteOnOffAttribute: attrId=0
+CHIP:DL: [MQTT] Using TOPIC_PREFIX: test-topic-prefix
+CHIP:DL: Device[Light 1]: ON
+CHIP:DL: [MQTT] Publishing message...
+CHIP:DL: [MQTT] Message published.
+...
+CHIP:DMG: AccessControl: allowed
+CHIP:DMG: Received command for Endpoint=5 Cluster=0x0000_0006 Command=0x0000_0002
+CHIP:DL: HandleReadOnOffAttribute: attrId=0, maxReadLength=1
+CHIP:ZCL: Toggle ep5 on/off from state 0 to 1
+CHIP:DL: HandleWriteOnOffAttribute: attrId=0
+CHIP:DL: [MQTT] Using TOPIC_PREFIX: test-topic-prefix
+CHIP:DL: Device[Light 3]: ON
+CHIP:DL: [MQTT] Publishing message...
+CHIP:DL: [MQTT] Message published.
+...
+```
 
+5. **Check MQTT messages**
+
+Simultaneously, you should also see messages being received by the MQTT client:
+
+```
 test-topic-prefix/3/OnOff/OnOff {
         "attributeId" : 0,
         "clusterId" : 6,
@@ -132,5 +209,15 @@ test-topic-prefix/3/OnOff/OnOff {
         "parentEndpointId" : 1,
         "zone" : ""
 }
+...
+test-topic-prefix/5/OnOff/OnOff {
+        "attributeId" : 0,
+        "clusterId" : 6,
+        "command" : "on",
+        "deviceName" : "Light 3",
+        "endpointId" : 5,
+        "location" : "Office",
+        "parentEndpointId" : 1,
+        "zone" : ""
+}
 ```
-
