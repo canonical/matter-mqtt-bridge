@@ -1,6 +1,27 @@
-# matter-mqtt-bridge
+# Matter MQTT Bridge
 
-The files under "app" directory get copied into CHIP project's examples/bridge-app/linux to inject MQTT functionality into the upstream example. The reason for this approach is to maintain the simplicity of this example and rely on the existing upstream build configurations.
+This is an example implementation for a Matter Bridge that forwards Matter commands as MQTT messages.
+The messages are serialized in JSON using a custom data model and published to the MQTT broker with a structured topic. 
+
+The MQTT Topic uses the following scheme: `<prefix>/<endpointID>/<clusterName>/<attributeName>`, allowing:
+
+Fine-grained subscription:
+- Device 1 subscribes to all its commands with filter: `matter/1/#`
+- Device 2 subscribes to all write requests to MoveToLevel attribute from the LevelControl cluster with filter: `matter/1/LevelControl/MoveToLevel`
+- A monitoring tool subscribes to all LevelControl commands: `matter/+/LevelControl/+`
+- A monitoring tool subscribes to all Matter messages: `matter/#`
+
+QoS and message retainment:
+- Device 1 wakes up from sleep and wants to receive the last OnOff: `matter/1/OnOff/OnOff`
+- Device 1 wakes up from sleep and wants to receive the last command under each of its own sub-topic: `matter/1/#`
+
+The prefix is configurable. Each endpoint corresponds to a single device.
+
+The application is a fork of the [connectedhomeip project's Linux bridge-app](https://github.com/project-chip/connectedhomeip/tree/master/examples/bridge-app/linux). 
+
+The application is packaged as a Snap. The following are the build and usage instructions for the snapped application.
+During the build, the files under [app](./app) directory get copied into CHIP project's `examples/bridge-app/linux`.
+The reason for this approach is to maintain the simplicity of this example and rely on the existing upstream build configuration and scripts.
 
 ## Build
 ```bash

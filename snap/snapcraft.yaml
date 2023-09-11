@@ -1,7 +1,7 @@
 name: matter-mqtt-bridge
 version: "1.0.0-alpha"
-summary: TBA
-description: Refer to https://snapcraft.io/TBA
+summary: Matter MQTT Bridge
+description: Refer to https://github.com/canonical/matter-mqtt-bridge
 
 # Matter:     Apache-2.0
 # Paho C lib: Eclipse Public License v1.0
